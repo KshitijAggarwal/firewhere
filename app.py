@@ -1,5 +1,6 @@
+import folium
 import pandas as pd
-import tensorflow as tf
+from streamlit_folium import folium_static
 
 from stutils import *
 
@@ -23,6 +24,9 @@ act_mapping = {
 
 
 def main():
+    # df = pd.DataFrame(np.random.randn(1000, 2) / [50, 50] + [37.76, -122.4], columns=['lat', 'lon'])
+    # st.map(df)
+
     activity = st.selectbox("Human activity", act_mapping)
 
     # st.write('Zip to lat long using https://simplemaps.com/data/us-counties')
@@ -39,6 +43,7 @@ def main():
 
     doy = st.number_input(label="Day of Year", step=1)
     weather_bool = st.checkbox("Show weather data")
+    show_map = st.checkbox("Show location on map")
 
     if st.button("Predict Size"):
         if not check_doy(doy):
@@ -70,6 +75,18 @@ def main():
                                 * Snow: {snow_val}
                             """
                 st.markdown(html_str, unsafe_allow_html=True)
+
+            if show_map:
+                # loc = pd.DataFrame({'lat': [lat], 'lon': [long]})
+                # st.map(loc, zoom=8)
+                m = folium.Map(
+                    location=[lat, long], zoom_start=16, tiles="OpenStreetMap"
+                )  # tiles="Stamen Terrain"
+
+                folium.Marker([lat, long], popup="Location").add_to(m)
+
+                # call to render Folium map in Streamlit
+                folium_static(m)
 
         with st.spinner("Running ML model"):
             inp = np.array(
