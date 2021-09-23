@@ -2,16 +2,13 @@
 # coding: utf-8
 
 import argparse
-import datetime
+
 import joblib
 import numpy as np
 import optuna
-import os
 import pandas as pd
-import pylab as plt
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.mixed_precision import experimental as mixed_precision
 
 from utils import make_model
 
