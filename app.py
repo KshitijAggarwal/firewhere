@@ -1,11 +1,9 @@
-import json
-import numpy as np
 import pandas as pd
-import streamlit as st
+import tensorflow as tf
 
 from stutils import *
 
-# import tensorflow as tf
+PATH = "/home/kshitij/firewhere/useful_data/data/"
 
 act_mapping = {
     "Lightening": "0",
@@ -23,51 +21,70 @@ act_mapping = {
     "Missing/Undefined": "12",
 }
 
-activity = st.selectbox("Human activity", act_mapping)
 
-# st.write('Zip to lat long using https://simplemaps.com/data/us-counties')
+def main():
+    activity = st.selectbox("Human activity", act_mapping)
 
-act_index = float(act_mapping[activity])
+    # st.write('Zip to lat long using https://simplemaps.com/data/us-counties')
 
-inp = st.radio("Input Options", ("Lat./Lon.", "County", "Zipcode"))
+    act_index = float(act_mapping[activity])
 
-if inp == "Lat./Lon.":
-    lat = st.number_input(label="Latitude", step=1.0, format="%.2f")
-    long = st.number_input(label="Longitude", step=1.0, format="%.2f")
-elif inp == "County":
-    lat, long = get_county_loc()
-else:
-    st.error("Not implemented")
+    inp = st.radio("Input Options", ("Lat./Lon.", "County"))
 
-doy = st.number_input(label="Day of Year", step=1)
-weather_bool = st.checkbox("Show weather data")
+    if inp == "Lat./Lon.":
+        lat = st.number_input(label="Latitude", step=1.0, format="%.2f")
+        long = st.number_input(label="Longitude", step=1.0, format="%.2f")
+    else:
+        lat, long = get_county_loc()
 
-if st.button("Predict Size"):
-    check_doy(doy)
-    check_pos(lat, long)
-    #     model = load_model()
-    try:
-        temp_val, dutr_val, prcp_val, snow_val = get_weather_params(
-            lat, long, doy, common_stations, tavg, diur, prcp, snow
-        )
-    except NameError:
-        tavg, diur, prcp, snow = read_weather_data()
-        common_stations = pd.read_csv("common_stations.csv")
-        temp_val, dutr_val, prcp_val, snow_val = get_weather_params(
-            lat, long, doy, common_stations, tavg, diur, prcp, snow
-        )
+    doy = st.number_input(label="Day of Year", step=1)
+    weather_bool = st.checkbox("Show weather data")
 
-    if weather_bool:
-        st.write(f"Average values of weather parameters:")
-        st.write(f"Temperature: {temp_val}")
-        st.write(f"Diurnal air temperature variation: {dutr_val}")
-        st.write(f"Precipitation: {prcp_val}")
-        st.write(f"Snow: {snow_val}")
+    if st.button("Predict Size"):
+        if not check_doy(doy):
+            return None
 
-    inp = np.array([lat, long, act_index, temp_val, dutr_val, prcp_val, snow_val])
-    st.write(inp)
-#     inp = tf.convert_to_tensor(np.expand_dims(inp, 0))
+        with st.spinner("Reading weather parameters"):
+            try:
+                vals = get_weather_params(
+                    lat, long, doy, common_stations, tavg, diur, prcp, snow
+                )
+            except NameError:
+                tavg, diur, prcp, snow = read_weather_data()
+                common_stations = pd.read_csv(f"{PATH}common_stations.csv")
+                vals = get_weather_params(
+                    lat, long, doy, common_stations, tavg, diur, prcp, snow
+                )
 
-#     res = model.predict(inp)
-#     st.write(f"Predicted firesize is {10**res[0][0]}acres")
-#     st.write(f'Selected Values: {activity}, {act_index}, {lat}, {long}, {doy}, {weather_bool}')
+            if vals:
+                temp_val, dutr_val, prcp_val, snow_val = vals
+            else:
+                return None
+
+            if weather_bool:
+                html_str = f"""
+                            ### Average values of weather parameters:
+                                * Temperature: {temp_val}
+                                * Diurnal air temperature variation: {dutr_val}
+                                * Precipitation: {prcp_val}
+                                * Snow: {snow_val}
+                            """
+                st.markdown(html_str, unsafe_allow_html=True)
+
+        with st.spinner("Running ML model"):
+            inp = np.array(
+                [lat, long, act_index, temp_val, dutr_val, prcp_val, snow_val]
+            )
+            inp = tf.convert_to_tensor(np.expand_dims(inp, 0))
+
+            try:
+                res = model.predict(inp)
+            except NameError:
+                model = load_model()
+                res = model.predict(inp)
+
+            st.markdown(f"### Predicted firesize is {10 ** res[0][0]:.3f} acres")
+
+
+if __name__ == "__main__":
+    main()
