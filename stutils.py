@@ -15,8 +15,12 @@ def get_county_loc():
     """
     with open(f"{PATH}countyinfo.json", "r") as fp:
         counties = json.load(fp)
-    state = st.selectbox("State", set(counties.keys()))
-    county = st.selectbox("County", counties[state])
+
+    c1, c2 = st.columns(2)
+    with c1:
+        state = st.selectbox("State", set(counties.keys()))
+    with c2:
+        county = st.selectbox("County", counties[state])
 
     loc = counties[state][county]
     #     if st.button('Selected'):

@@ -22,15 +22,8 @@ act_mapping = {
     "Missing/Undefined": "12",
 }
 
-
 def main():
-    # df = pd.DataFrame(np.random.randn(1000, 2) / [50, 50] + [37.76, -122.4], columns=['lat', 'lon'])
-    # st.map(df)
-
     activity = st.selectbox("Human activity", act_mapping)
-
-    # st.write('Zip to lat long using https://simplemaps.com/data/us-counties')
-
     act_index = float(act_mapping[activity])
 
     inp = st.radio("Input Options", ("Lat./Lon.", "County"))
@@ -42,8 +35,11 @@ def main():
         lat, long = get_county_loc()
 
     doy = st.number_input(label="Day of Year", step=1)
-    weather_bool = st.checkbox("Show weather data")
-    show_map = st.checkbox("Show location on map")
+    c1, c2 = st.columns(2)
+    with c1:
+        weather_bool = st.checkbox("Show weather data")
+    with c2:
+        show_map = st.checkbox("Show location on map")
 
     if st.button("Predict Size"):
         if not check_doy(doy):
@@ -84,8 +80,6 @@ def main():
                 )  # tiles="Stamen Terrain"
 
                 folium.Marker([lat, long], popup="Location").add_to(m)
-
-                # call to render Folium map in Streamlit
                 folium_static(m)
 
         with st.spinner("Running ML model"):
@@ -101,7 +95,6 @@ def main():
                 res = model.predict(inp)
 
             st.markdown(f"### Predicted firesize is {10 ** res[0][0]:.3f} acres")
-
 
 if __name__ == "__main__":
     main()
