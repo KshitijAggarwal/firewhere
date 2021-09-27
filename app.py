@@ -22,19 +22,27 @@ act_mapping = {
     "Missing/Undefined": "12",
 }
 
+
 def main():
-    activity = st.selectbox("Human activity", act_mapping)
+    cact, cdoy = st.sidebar.columns(2)
+    with cact:
+        activity = st.sidebar.selectbox("Human activity", act_mapping)
+    with cdoy:
+        doy = st.sidebar.number_input(label="Day of Year", step=1)
+
     act_index = float(act_mapping[activity])
 
-    inp = st.radio("Input Options", ("Lat./Lon.", "County"))
+    inp = st.sidebar.radio("Input Options", ("Lat./Lon.", "County"))
 
     if inp == "Lat./Lon.":
-        lat = st.number_input(label="Latitude", step=1.0, format="%.2f")
-        long = st.number_input(label="Longitude", step=1.0, format="%.2f")
+        clat, clong = st.sidebar.columns(2)
+        with clat:
+            lat = st.sidebar.number_input(label="Latitude", step=1.0, format="%.2f")
+        with clong:
+            long = st.sidebar.number_input(label="Longitude", step=1.0, format="%.2f")
     else:
         lat, long = get_county_loc()
 
-    doy = st.number_input(label="Day of Year", step=1)
     c1, c2 = st.columns(2)
     with c1:
         weather_bool = st.checkbox("Show weather data")
@@ -46,16 +54,11 @@ def main():
             return None
 
         with st.spinner("Reading weather parameters"):
-            try:
-                vals = get_weather_params(
-                    lat, long, doy, common_stations, tavg, diur, prcp, snow
-                )
-            except NameError:
-                tavg, diur, prcp, snow = read_weather_data()
-                common_stations = pd.read_csv(f"{PATH}common_stations.csv")
-                vals = get_weather_params(
-                    lat, long, doy, common_stations, tavg, diur, prcp, snow
-                )
+            tavg, diur, prcp, snow = read_weather_data()
+            common_stations = pd.read_csv(f"{PATH}common_stations.csv")
+            vals = get_weather_params(
+                lat, long, doy, common_stations, tavg, diur, prcp, snow
+            )
 
             if vals:
                 temp_val, dutr_val, prcp_val, snow_val = vals
@@ -88,13 +91,11 @@ def main():
             )
             inp = tf.convert_to_tensor(np.expand_dims(inp, 0))
 
-            try:
-                res = model.predict(inp)
-            except NameError:
-                model = load_model()
-                res = model.predict(inp)
+            model = load_model()
+            res = model.predict(inp)
 
             st.markdown(f"### Predicted firesize is {10 ** res[0][0]:.3f} acres")
+
 
 if __name__ == "__main__":
     main()

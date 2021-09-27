@@ -7,6 +7,7 @@ import tensorflow as tf
 PATH = "/home/kshitij/firewhere/useful_data/data/"
 
 
+@st.cache
 def get_county_loc():
     """
 
@@ -16,11 +17,11 @@ def get_county_loc():
     with open(f"{PATH}countyinfo.json", "r") as fp:
         counties = json.load(fp)
 
-    c1, c2 = st.columns(2)
+    c1, c2 = st.sidebar.columns(2)
     with c1:
-        state = st.selectbox("State", set(counties.keys()))
+        state = st.sidebar.selectbox("State", set(counties.keys()))
     with c2:
-        county = st.selectbox("County", counties[state])
+        county = st.sidebar.selectbox("County", counties[state])
 
     loc = counties[state][county]
     #     if st.button('Selected'):
@@ -44,6 +45,7 @@ def check_doy(doy):
         return 1
 
 
+@st.cache
 def read_weather_data():
     """
 
