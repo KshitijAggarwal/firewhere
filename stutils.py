@@ -3,20 +3,40 @@ import json
 import numpy as np
 import streamlit as st
 import tensorflow as tf
+import urllib
 
-PATH = "/home/kshitij/firewhere/useful_data/data/"
+PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
+MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/model.tar.gz"
 
 
-@st.cache
-def get_county_loc():
+@st.cache()
+def get_dict_from_url(url):
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read())
+    return data
+
+
+@st.cache()
+def get_counties():
     """
 
     Returns:
 
     """
-    with open(f"{PATH}countyinfo.json", "r") as fp:
-        counties = json.load(fp)
 
+    counties = get_dict_from_url(f"{PATH}countyinfo.json")
+    return counties
+
+
+def get_county_loc(counties):
+    """
+
+    Args:
+        counties:
+
+    Returns:
+
+    """
     c1, c2 = st.sidebar.columns(2)
     with c1:
         state = st.sidebar.selectbox("State", set(counties.keys()))
@@ -24,8 +44,6 @@ def get_county_loc():
         county = st.sidebar.selectbox("County", counties[state])
 
     loc = counties[state][county]
-    #     if st.button('Selected'):
-    #         st.write(f'Selected Values: {state}, {county}, {loc}')
     return loc["Latitude"], loc["Longitude"]
 
 
@@ -45,24 +63,22 @@ def check_doy(doy):
         return 1
 
 
-@st.cache
+# @st.cache
+@st.cache()
 def read_weather_data():
     """
 
     Returns:
 
     """
-    with open(f"{PATH}tavg.json", "r") as fp:
-        tavg = json.load(fp)
-    with open(f"{PATH}diur.json", "r") as fp:
-        diur = json.load(fp)
-    with open(f"{PATH}prcp.json", "r") as fp:
-        prcp = json.load(fp)
-    with open(f"{PATH}snow.json", "r") as fp:
-        snow = json.load(fp)
+    tavg = get_dict_from_url(f"{PATH}tavg.json")
+    diur = get_dict_from_url(f"{PATH}diur.json")
+    snow = get_dict_from_url(f"{PATH}snow.json")
+    prcp = get_dict_from_url(f"{PATH}prcp.json")
     return tavg, diur, prcp, snow
 
 
+@st.cache()
 def get_weather_params(lat, long, doy, common_stations, tavg, diur, prcp, snow):
     """
 
@@ -103,10 +119,13 @@ def get_weather_params(lat, long, doy, common_stations, tavg, diur, prcp, snow):
     return temp_val, dutr_val, prcp_val, snow_val
 
 
+# @st.cache(allow_output_mutation=True)
 def load_model():
     """
 
     Returns:
 
     """
-    return tf.keras.models.load_model("/home/kshitij/firewhere/useful_data/fw_model")
+    local_path = tf.keras.utils.get_file("model", MODEL_PATH, extract=True)
+    p = "/".join(local_path.split("/")[:-1])
+    return tf.keras.models.load_model(p + "/trained_model")

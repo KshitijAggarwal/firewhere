@@ -1,10 +1,9 @@
 import folium
 import pandas as pd
 from streamlit_folium import folium_static
-
 from stutils import *
 
-PATH = "/home/kshitij/firewhere/useful_data/data/"
+PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
 
 act_mapping = {
     "Lightening": "0",
@@ -41,7 +40,8 @@ def main():
         with clong:
             long = st.sidebar.number_input(label="Longitude", step=1.0, format="%.2f")
     else:
-        lat, long = get_county_loc()
+        counties = get_counties()
+        lat, long = get_county_loc(counties)
 
     c1, c2 = st.columns(2)
     with c1:
@@ -60,34 +60,27 @@ def main():
                 lat, long, doy, common_stations, tavg, diur, prcp, snow
             )
 
-            if vals:
-                temp_val, dutr_val, prcp_val, snow_val = vals
-            else:
-                return None
+        temp_val, dutr_val, prcp_val, snow_val = vals
 
-            if weather_bool:
-                html_str = f"""
-                            ### Average values of weather parameters:
-                                * Temperature: {temp_val}
-                                * Diurnal air temperature variation: {dutr_val}
-                                * Precipitation: {prcp_val}
-                                * Snow: {snow_val}
-                            """
-                st.markdown(html_str, unsafe_allow_html=True)
+        if weather_bool:
+            html_str = f"""
+                        ### Average values of weather parameters:
+                            * Temperature: {temp_val}
+                            * Diurnal air temperature variation: {dutr_val}
+                            * Precipitation: {prcp_val}
+                            * Snow: {snow_val}
+                        """
+            st.markdown(html_str, unsafe_allow_html=True)
 
-            if show_map:
-                # loc = pd.DataFrame({'lat': [lat], 'lon': [long]})
-                # st.map(loc, zoom=8)
-                m = folium.Map(
-                    location=[lat, long], zoom_start=16, tiles="OpenStreetMap"
-                )  # tiles="Stamen Terrain"
+        if show_map:
+            m = folium.Map(location=[lat, long], zoom_start=16, tiles="OpenStreetMap")
 
-                folium.Marker([lat, long], popup="Location").add_to(m)
-                folium_static(m)
+            folium.Marker([lat, long], popup="Location").add_to(m)
+            folium_static(m)
 
         with st.spinner("Running ML model"):
             inp = np.array(
-                [lat, long, act_index, temp_val, dutr_val, prcp_val, snow_val]
+                [lat, long, doy, act_index, temp_val, dutr_val, prcp_val, snow_val]
             )
             inp = tf.convert_to_tensor(np.expand_dims(inp, 0))
 
