@@ -1,26 +1,33 @@
 import json
+import urllib
 
 import numpy as np
 import streamlit as st
 import tensorflow as tf
-import urllib
 
 PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
 MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/model.tar.gz"
 
 
-@st.cache()
+@st.cache(show_spinner=False)
 def get_dict_from_url(url):
+    """
+
+    Args:
+        url: URL to read the JSON from.
+
+    Returns:
+
+    """
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
     return data
 
 
-@st.cache()
+@st.cache(show_spinner=False)
 def get_counties():
     """
-
-    Returns:
+    Reads the file with county locations and returns the dictionary.
 
     """
 
@@ -30,9 +37,10 @@ def get_counties():
 
 def get_county_loc(counties):
     """
+    Returns the location of county.
 
     Args:
-        counties:
+        counties: dictionary containing the county info.
 
     Returns:
 
@@ -49,11 +57,7 @@ def get_county_loc(counties):
 
 def check_doy(doy):
     """
-
-    Args:
-        doy:
-
-    Returns:
+    Makes sure the day of year is between 1 and 365.
 
     """
     if doy < 1 or doy > 365:
@@ -64,11 +68,13 @@ def check_doy(doy):
 
 
 # @st.cache
-@st.cache()
+@st.cache(show_spinner=False)
 def read_weather_data():
     """
+    Read weather data from individual files.
 
     Returns:
+        Dictionaries with weather data.
 
     """
     tavg = get_dict_from_url(f"{PATH}tavg.json")
@@ -78,21 +84,24 @@ def read_weather_data():
     return tavg, diur, prcp, snow
 
 
-@st.cache()
+@st.cache(show_spinner=False)
 def get_weather_params(lat, long, doy, common_stations, tavg, diur, prcp, snow):
     """
+    Return weather values for a given location and day of year. It searches for the nearest weather station and
+    returns the values from it.
 
     Args:
-        lat:
-        long:
-        doy:
-        common_stations:
-        tavg:
-        diur:
-        prcp:
-        snow:
+        lat: Latitude
+        long: Longitude
+        doy: Day of the year
+        common_stations: Weather station names
+        tavg: Average temperature
+        diur: Average temperature difference between the minimum at night (low) and the maximum during the day (high).
+        prcp: Average precipitation.
+        snow: Average snowfall.
 
     Returns:
+        Temperature, Diurnal, Precipitation and Snow values for that location and day.
 
     """
     dist = np.array(
@@ -122,6 +131,7 @@ def get_weather_params(lat, long, doy, common_stations, tavg, diur, prcp, snow):
 # @st.cache(allow_output_mutation=True)
 def load_model():
     """
+    Load the model.
 
     Returns:
 

@@ -1,6 +1,7 @@
 import folium
 import pandas as pd
 from streamlit_folium import folium_static
+
 from stutils import *
 
 PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
@@ -23,6 +24,7 @@ act_mapping = {
 
 
 def main():
+    # Human activity and day of year selection
     cact, cdoy = st.sidebar.columns(2)
     with cact:
         activity = st.sidebar.selectbox("Human activity", act_mapping)
@@ -33,6 +35,7 @@ def main():
 
     inp = st.sidebar.radio("Input Options", ("Lat./Lon.", "County"))
 
+    # Location selection to get lat. and lon.
     if inp == "Lat./Lon.":
         clat, clong = st.sidebar.columns(2)
         with clat:
@@ -43,12 +46,14 @@ def main():
         counties = get_counties()
         lat, long = get_county_loc(counties)
 
+    # To display weather data and location.
     c1, c2 = st.columns(2)
     with c1:
         weather_bool = st.checkbox("Show weather data")
     with c2:
         show_map = st.checkbox("Show location on map")
 
+    # Predict button
     if st.button("Predict Size"):
         if not check_doy(doy):
             return None
