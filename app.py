@@ -1,5 +1,4 @@
 import folium
-import pandas as pd
 from streamlit_folium import folium_static
 
 from stutils import *
@@ -43,7 +42,7 @@ def main():
         with clong:
             long = st.sidebar.number_input(label="Longitude", step=1.0, format="%.2f")
     else:
-        counties = get_counties()
+        counties = get_counties(PATH)
         lat, long = get_county_loc(counties)
 
     # To display weather data and location.
@@ -58,9 +57,11 @@ def main():
         if not check_doy(doy):
             return None
 
+        with st.spinner("Setting up lookup tables"):
+            tavg, diur, prcp, snow = read_weather_data(PATH)
+            common_stations = read_stations(PATH)
+
         with st.spinner("Reading weather parameters"):
-            tavg, diur, prcp, snow = read_weather_data()
-            common_stations = pd.read_csv(f"{PATH}common_stations.csv")
             vals = get_weather_params(
                 lat, long, doy, common_stations, tavg, diur, prcp, snow
             )

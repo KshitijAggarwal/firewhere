@@ -4,8 +4,9 @@ import urllib
 import numpy as np
 import streamlit as st
 import tensorflow as tf
+import pandas as pd
 
-PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
+#PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
 MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/model.tar.gz"
 
 
@@ -24,13 +25,13 @@ def get_dict_from_url(url):
     return data
 
 
-@st.cache(show_spinner=False)
-def get_counties():
+@st.cache(show_spinner=False, persist=True)
+def get_counties(PATH):
     """
     Reads the file with county locations and returns the dictionary.
 
     """
-
+    st.write('read counties function is running. ')
     counties = get_dict_from_url(f"{PATH}countyinfo.json")
     return counties
 
@@ -67,9 +68,8 @@ def check_doy(doy):
         return 1
 
 
-# @st.cache
-@st.cache(show_spinner=False)
-def read_weather_data():
+@st.cache(show_spinner=False, persist=True)
+def read_weather_data(PATH):
     """
     Read weather data from individual files.
 
@@ -77,11 +77,22 @@ def read_weather_data():
         Dictionaries with weather data.
 
     """
+    st.write('read weather data function is running. ')
     tavg = get_dict_from_url(f"{PATH}tavg.json")
     diur = get_dict_from_url(f"{PATH}diur.json")
     snow = get_dict_from_url(f"{PATH}snow.json")
     prcp = get_dict_from_url(f"{PATH}prcp.json")
     return tavg, diur, prcp, snow
+
+@st.cache(show_spinner=False, persist=True)
+def read_stations(PATH):
+    """
+
+    Returns:
+
+    """
+    st.write('read stations function is running.')
+    return pd.read_csv(f"{PATH}common_stations.csv")
 
 
 @st.cache(show_spinner=False)
