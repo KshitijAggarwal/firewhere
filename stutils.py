@@ -25,13 +25,13 @@ def get_dict_from_url(url):
     return data
 
 
-@st.cache(show_spinner=False, persist=True)
+@st.cache(show_spinner=False)
 def get_counties(PATH):
     """
     Reads the file with county locations and returns the dictionary.
 
     """
-    st.write('read counties function is running. ')
+    #st.write('read counties function is running. ')
     counties = get_dict_from_url(f"{PATH}countyinfo.json")
     return counties
 
@@ -67,8 +67,7 @@ def check_doy(doy):
     else:
         return 1
 
-
-@st.cache(show_spinner=False, persist=True)
+@st.cache(show_spinner=False)
 def read_weather_data(PATH):
     """
     Read weather data from individual files.
@@ -77,21 +76,21 @@ def read_weather_data(PATH):
         Dictionaries with weather data.
 
     """
-    st.write('read weather data function is running. ')
+    #st.write('read weather data function is running. ')
     tavg = get_dict_from_url(f"{PATH}tavg.json")
     diur = get_dict_from_url(f"{PATH}diur.json")
     snow = get_dict_from_url(f"{PATH}snow.json")
     prcp = get_dict_from_url(f"{PATH}prcp.json")
     return tavg, diur, prcp, snow
 
-@st.cache(show_spinner=False, persist=True)
+@st.cache(show_spinner=False)
 def read_stations(PATH):
     """
 
     Returns:
 
     """
-    st.write('read stations function is running.')
+    #st.write('read stations function is running.')
     return pd.read_csv(f"{PATH}common_stations.csv")
 
 
