@@ -2,12 +2,9 @@ import json
 import urllib
 
 import numpy as np
+import pandas as pd
 import streamlit as st
 import tensorflow as tf
-import pandas as pd
-
-#PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
-MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/model.tar.gz"
 
 
 @st.cache(show_spinner=False)
@@ -21,19 +18,17 @@ def get_dict_from_url(url):
 
     """
     response = urllib.request.urlopen(url)
-    data = json.loads(response.read())
-    return data
+    return json.loads(response.read())
 
 
-@st.cache(show_spinner=False)
-def get_counties(PATH):
+@st.cache(show_spinner=False, persist=True)
+def get_counties():
     """
     Reads the file with county locations and returns the dictionary.
 
     """
-    #st.write('read counties function is running. ')
-    counties = get_dict_from_url(f"{PATH}countyinfo.json")
-    return counties
+    PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
+    return get_dict_from_url(f"{PATH}countyinfo.json")
 
 
 def get_county_loc(counties):
@@ -67,8 +62,9 @@ def check_doy(doy):
     else:
         return 1
 
-@st.cache(show_spinner=False)
-def read_weather_data(PATH):
+
+@st.cache(show_spinner=False, persist=True)
+def read_weather_data():
     """
     Read weather data from individual files.
 
@@ -76,26 +72,25 @@ def read_weather_data(PATH):
         Dictionaries with weather data.
 
     """
-    #st.write('read weather data function is running. ')
-    tavg = get_dict_from_url(f"{PATH}tavg.json")
-    diur = get_dict_from_url(f"{PATH}diur.json")
-    snow = get_dict_from_url(f"{PATH}snow.json")
-    prcp = get_dict_from_url(f"{PATH}prcp.json")
-    return tavg, diur, prcp, snow
+    # st.write('read weather data function is running. ')
+    PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
+    return pd.read_parquet(f"{PATH}combined.parquet")
 
-@st.cache(show_spinner=False)
-def read_stations(PATH):
+
+@st.cache(show_spinner=False, persist=True)
+def read_stations():
     """
 
     Returns:
 
     """
-    #st.write('read stations function is running.')
-    return pd.read_csv(f"{PATH}common_stations.csv")
+    # st.write('read stations function is running.')
+    PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
+    return pd.read_parquet(f"{PATH}common_stations.parquet")
 
 
 @st.cache(show_spinner=False)
-def get_weather_params(lat, long, doy, common_stations, tavg, diur, prcp, snow):
+def get_weather_params(lat, long, doy, common_stations, temp_data):
     """
     Return weather values for a given location and day of year. It searches for the nearest weather station and
     returns the values from it.
@@ -130,15 +125,12 @@ def get_weather_params(lat, long, doy, common_stations, tavg, diur, prcp, snow):
         return None
     cst = common_stations.iloc[ind]
     station_id = cst["id"]
-    doy = str(float(doy))
-    temp_val = tavg[station_id][doy]
-    dutr_val = diur[station_id][doy]
-    prcp_val = prcp[station_id][doy]
-    snow_val = snow[station_id][doy]
+    doy = int(doy)
+    temp_val, dutr_val, prcp_val, snow_val = temp_data[station_id][doy]
     return temp_val, dutr_val, prcp_val, snow_val
 
 
-# @st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True)
 def load_model():
     """
     Load the model.
@@ -146,6 +138,7 @@ def load_model():
     Returns:
 
     """
+    MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/model.tar.gz"
     local_path = tf.keras.utils.get_file("model", MODEL_PATH, extract=True)
     p = "/".join(local_path.split("/")[:-1])
     return tf.keras.models.load_model(p + "/trained_model")

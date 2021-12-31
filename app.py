@@ -3,8 +3,6 @@ from streamlit_folium import folium_static
 
 from stutils import *
 
-PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
-
 act_mapping = {
     "Lightening": "0",
     "Equipment Use": "1",
@@ -42,7 +40,7 @@ def main():
         with clong:
             long = st.sidebar.number_input(label="Longitude", step=1.0, format="%.2f")
     else:
-        counties = get_counties(PATH)
+        counties = get_counties()
         lat, long = get_county_loc(counties)
 
     # To display weather data and location.
@@ -58,13 +56,11 @@ def main():
             return None
 
         with st.spinner("Setting up lookup tables"):
-            tavg, diur, prcp, snow = read_weather_data(PATH)
-            common_stations = read_stations(PATH)
+            temp_data = read_weather_data()
+            common_stations = read_stations()
 
         with st.spinner("Reading weather parameters"):
-            vals = get_weather_params(
-                lat, long, doy, common_stations, tavg, diur, prcp, snow
-            )
+            vals = get_weather_params(lat, long, doy, common_stations, temp_data)
 
         temp_val, dutr_val, prcp_val, snow_val = vals
 
