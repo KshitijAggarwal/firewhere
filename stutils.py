@@ -115,7 +115,7 @@ def get_weather_params(lat, long, doy, common_stations, temp_data):
         st.error(
             "No weather stations within 1 degrees of the queried location. Try some other location. "
             "Approximate lat/long ranges for US are: "
-            "Latitude: 30 to 50, Logitude: -70 to -120."
+            "Latitude: 30 to 50, Longitude: -70 to -120."
         )
 
         return None
