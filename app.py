@@ -87,8 +87,8 @@ def main():
                         #### Average values of weather parameters:
                             * Temperature: {temp_val}F
                             * Diurnal air temperature variation: {dutr_val}F
-                            * Precipitation: {prcp_val}in
-                            * Snow: {snow_val}in
+                            * Precipitation: {prcp_val}mm
+                            * Snow: {snow_val}mm
                         """
             st.markdown(html_str, unsafe_allow_html=True)
 

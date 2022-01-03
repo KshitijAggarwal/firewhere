@@ -66,13 +66,14 @@ def check_doy(doy):
 @st.cache(show_spinner=False, persist=True)
 def read_weather_data():
     """
-    Reads 30-year averaged weather data
+    Reads 30-year averaged weather data (1991-2020).
+    Original source: https://www.ncei.noaa.gov/data/normals-daily/1991-2020/
+    See doc/Normals_Calculation_Methodology_2020.pdf for documentation.
 
     Returns:
         DataFrame with weather data.
 
     """
-    # st.write('read weather data function is running. ')
     PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
     return pd.read_parquet(f"{PATH}combined.parquet")
 
@@ -83,7 +84,6 @@ def read_stations():
     Reads station information and returns a DataFrame
 
     """
-    # st.write('read stations function is running.')
     PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/data/"
     return pd.read_parquet(f"{PATH}common_stations.parquet")
 
