@@ -66,10 +66,10 @@ def check_doy(doy):
 @st.cache(show_spinner=False, persist=True)
 def read_weather_data():
     """
-    Read weather data from individual files.
+    Reads 30-year averaged weather data
 
     Returns:
-        Dictionaries with weather data.
+        DataFrame with weather data.
 
     """
     # st.write('read weather data function is running. ')
@@ -80,8 +80,7 @@ def read_weather_data():
 @st.cache(show_spinner=False, persist=True)
 def read_stations():
     """
-
-    Returns:
+    Reads station information and returns a DataFrame
 
     """
     # st.write('read stations function is running.')
@@ -92,18 +91,15 @@ def read_stations():
 @st.cache(show_spinner=False)
 def get_weather_params(lat, long, doy, common_stations, temp_data):
     """
-    Return weather values for a given location and day of year. It searches for the nearest weather station and
-    returns the values from it.
+    Return weather values for a given location and day of year.
+    It searches for the nearest weather station and returns the values from it.
 
     Args:
         lat: Latitude
         long: Longitude
         doy: Day of the year
         common_stations: Weather station names
-        tavg: Average temperature
-        diur: Average temperature difference between the minimum at night (low) and the maximum during the day (high).
-        prcp: Average precipitation.
-        snow: Average snowfall.
+        temp_dat: Average temperature, variation, precipitation and snowfall
 
     Returns:
         Temperature, Diurnal, Precipitation and Snow values for that location and day.

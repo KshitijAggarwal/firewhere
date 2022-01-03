@@ -1,3 +1,5 @@
+import datetime
+
 import folium
 from streamlit_folium import folium_static
 
@@ -26,12 +28,15 @@ def main():
     with cact:
         activity = st.sidebar.selectbox("Human activity", act_mapping)
     with cdoy:
-        doy = st.sidebar.number_input(label="Day of Year", step=1)
+        day = st.sidebar.date_input(
+            "Day of Year", datetime.datetime.now(), min_value=datetime.datetime.now()
+        )
 
     act_index = float(act_mapping[activity])
 
-    inp = st.sidebar.radio("Input Options", ("Lat./Lon.", "County"))
+    inp = st.sidebar.radio("Location Options", ("County", "Lat./Lon."))
 
+    doy = day.timetuple().tm_yday
     # Location selection to get lat. and lon.
     if inp == "Lat./Lon.":
         clat, clong = st.sidebar.columns(2)
@@ -42,6 +47,8 @@ def main():
     else:
         counties = get_counties()
         lat, long = get_county_loc(counties)
+
+    st.markdown("# FireWhere")
 
     # To display weather data and location.
     c1, c2 = st.columns(2)
@@ -60,25 +67,9 @@ def main():
             common_stations = read_stations()
 
         with st.spinner("Reading weather parameters"):
-            vals = get_weather_params(lat, long, doy, common_stations, temp_data)
-
-        temp_val, dutr_val, prcp_val, snow_val = vals
-
-        if weather_bool:
-            html_str = f"""
-                        ### Average values of weather parameters:
-                            * Temperature: {temp_val}
-                            * Diurnal air temperature variation: {dutr_val}
-                            * Precipitation: {prcp_val}
-                            * Snow: {snow_val}
-                        """
-            st.markdown(html_str, unsafe_allow_html=True)
-
-        if show_map:
-            m = folium.Map(location=[lat, long], zoom_start=16, tiles="OpenStreetMap")
-
-            folium.Marker([lat, long], popup="Location").add_to(m)
-            folium_static(m)
+            temp_val, dutr_val, prcp_val, snow_val = get_weather_params(
+                lat, long, doy, common_stations, temp_data
+            )
 
         with st.spinner("Running ML model"):
             inp = np.array(
@@ -90,6 +81,22 @@ def main():
             res = model.predict(inp)
 
             st.markdown(f"### Predicted firesize is {10 ** res[0][0]:.3f} acres")
+
+        if weather_bool:
+            html_str = f"""
+                        #### Average values of weather parameters:
+                            * Temperature: {temp_val}F
+                            * Diurnal air temperature variation: {dutr_val}F
+                            * Precipitation: {prcp_val}in
+                            * Snow: {snow_val}in
+                        """
+            st.markdown(html_str, unsafe_allow_html=True)
+
+        if show_map:
+            m = folium.Map(location=[lat, long], zoom_start=16, tiles="OpenStreetMap")
+
+            folium.Marker([lat, long], popup="Location").add_to(m)
+            folium_static(m)
 
 
 if __name__ == "__main__":
