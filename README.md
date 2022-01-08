@@ -1,8 +1,6 @@
 # FireWhere
 
-Predicting size of wildfires using Machine Learning.
-
-Here is a demo:
+Predict size of wildfires using Machine Learning.
 
 Install the requirements to run the app using:
 

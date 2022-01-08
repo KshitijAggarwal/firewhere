@@ -29,7 +29,7 @@ def main():
         activity = st.sidebar.selectbox("Cause of the fire", act_mapping)
     with cdoy:
         day = st.sidebar.date_input(
-            "Day of Year", datetime.datetime.now(), min_value=datetime.datetime.now()
+            "Date", datetime.datetime.now(), min_value=datetime.datetime.now()
         )
 
     act_index = float(act_mapping[activity])

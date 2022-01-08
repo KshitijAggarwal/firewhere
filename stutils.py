@@ -126,7 +126,7 @@ def get_weather_params(lat, long, doy, common_stations, temp_data):
     return temp_val, dutr_val, prcp_val, snow_val
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True, show_spinner=False)
 def load_model():
     """
     Load the model.
