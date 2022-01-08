@@ -4,6 +4,7 @@ import tensorflow as tf
 
 def plot_loss(history):
     """
+    Plot loss using Optuna outputs.
 
     Args:
         history:
@@ -14,20 +15,21 @@ def plot_loss(history):
     plt.plot(history.history["loss"], label="loss")
     plt.plot(history.history["val_loss"], label="val_loss")
     plt.xlabel("Epoch")
-    plt.ylabel("Error [MPG]")
+    plt.ylabel("Loss")
     plt.legend()
     plt.grid(True)
 
 
 def make_model(trial, normalizer):
     """
+    Makes a model using a trail object
 
     Args:
-        trial:
-        normalizer:
+        trial: trial object to select hyperparameters
+        normalizer: normalization layer
 
     Returns:
-
+        tf.keras model
     """
     sizes = [32, 64, 128, 256, 512, 1024]
     n_layers = trial.suggest_int("n_layers", 4, 8)

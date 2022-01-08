@@ -15,16 +15,15 @@ from scripts.utils import make_model
 
 def objective(trial):
     """
+    Objective function for hyperparameter optimization of MLP using Optuna.
 
     Args:
-        trial:
+        trial: Trial object that handles parameter suggestions.
 
     Returns:
-
+        Score: Validation score of trained model.
     """
     tf.keras.backend.clear_session()
-    #     policy = mixed_precision.Policy("mixed_float16")
-    #     mixed_precision.set_policy(policy)
     df = pd.read_csv("everything.csv")
     df = df.drop("Unnamed: 0", axis=1)
     features = np.array(
@@ -43,10 +42,10 @@ def objective(trial):
     )
     labels = np.array(df["FIRE_SIZE"])
     X_train, X_test, y_train, y_test = train_test_split(
-        features, labels, test_size=0.10, shuffle=True
+        features, labels, test_size=0.10, shuffle=True, random_state=1996
     )
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=0.20, shuffle=True
+        X_train, y_train, test_size=0.20, shuffle=True, random_state=1996
     )
 
     X_train = tf.convert_to_tensor(X_train)
@@ -60,14 +59,9 @@ def objective(trial):
     normalizer.adapt(np.array(X_train))
 
     model = make_model(trial, normalizer)
-    err = "mean_absolute_error"  # 'mean_squared_error'
+    err = "mean_absolute_error"
     lr = trial.suggest_float("lr", 1e-4, 1e-1, log=True)
-    #     op = trial.suggest_categorical(f"optimizer", ["adam"])# "adagrad"])
-    #     if op == "adam":
     opt = tf.keras.optimizers.Adam(lr=lr)
-    #     else:
-    #         opt = tf.keras.optimizers.Adagrad(lr=lr)
-
     model.compile(loss=err, optimizer=opt, metrics=[err])
 
     batch_size = 4096
@@ -95,7 +89,7 @@ def objective(trial):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="optuna.py",
-        description="Do hyperparameter optimization",
+        description="Do hyperparameter optimization for MLP",
     )
     parser.add_argument(
         "-n", "--ntrials", help="Number of trials", required=True, type=int, default=200
@@ -114,4 +108,4 @@ if __name__ == "__main__":
     for key, value in trial.params.items():
         print("   {}: {}".format(key, value))
 
-    joblib.dump(study, f"study_trials_{values.ntrials}.pkl")
+    joblib.dump(study, f"mlp_study_trials_{values.ntrials}.pkl")
