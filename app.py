@@ -6,7 +6,6 @@ from streamlit_folium import folium_static
 from stutils import *
 
 act_mapping = {
-    "Lightening": "0",
     "Equipment Use": "1",
     "Smoking": "2",
     "Campfire": "3",
@@ -19,6 +18,7 @@ act_mapping = {
     "Powerline": "10",
     "Structure": "11",
     "Missing/Undefined": "12",
+    "Lightening": "0",
 }
 
 
@@ -26,7 +26,7 @@ def main():
     # Human activity and day of year selection
     cact, cdoy = st.sidebar.columns(2)
     with cact:
-        activity = st.sidebar.selectbox("Human activity", act_mapping)
+        activity = st.sidebar.selectbox("Cause of the fire", act_mapping)
     with cdoy:
         day = st.sidebar.date_input(
             "Day of Year", datetime.datetime.now(), min_value=datetime.datetime.now()
@@ -86,7 +86,7 @@ def main():
             html_str = f"""
                         #### Average values of weather parameters:
                             * Temperature: {temp_val}F
-                            * Diurnal air temperature variation: {dutr_val}F
+                            * Daily temperature variation: {dutr_val}F
                             * Precipitation: {prcp_val}mm
                             * Snow: {snow_val}mm
                         """
