@@ -134,7 +134,6 @@ def load_model():
     Returns:
 
     """
-    MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/model.tar.gz"
-    local_path = tf.keras.utils.get_file("model", MODEL_PATH, extract=True)
-    p = "/".join(local_path.split("/")[:-1])
-    return tf.keras.models.load_model(p + "/trained_model")
+    MODEL_PATH = "https://firewhere-data.s3.us-east-2.amazonaws.com/h5_model.h5"
+    local_path = tf.keras.utils.get_file(origin=MODEL_PATH, extract=True)
+    return tf.keras.models.load_model(local_path)

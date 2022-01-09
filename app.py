@@ -80,7 +80,16 @@ def main():
             model = load_model()
             res = model.predict(inp)
 
-            st.markdown(f"### Predicted firesize is {10 ** res[0][0]:.3f} acres")
+            arg = np.argmax(res)
+
+            if arg == 0:
+                s = "less than 0.22 acres"
+            elif arg == 1:
+                s = "between 0.22 and 2 acres"
+            else:
+                s = "greater than 2 acres"
+
+            st.markdown(f"### Predicted fire size is {s}")
 
         if weather_bool:
             html_str = f"""
